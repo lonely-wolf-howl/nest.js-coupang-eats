@@ -6,6 +6,7 @@ COPY package*.json ./
 COPY pnpm-lock.yaml ./
 
 RUN npm i -g pnpm
+RUN pnpm -v
 
 RUN pnpm i
 
