@@ -1,4 +1,11 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UnauthorizedException,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register-dto';
 import { Authorization } from './decorator/authorization.decorator';
@@ -15,6 +22,15 @@ export class AuthController {
     if (token === null) {
       throw new UnauthorizedException();
     }
-    return this.authService.register(token, registerDto);
+    return await this.authService.register(token, registerDto);
+  }
+
+  @Post('login')
+  @UsePipes(ValidationPipe)
+  async loginUser(@Authorization() token: string) {
+    if (token === null) {
+      throw new UnauthorizedException();
+    }
+    return await this.authService.login(token);
   }
 }
