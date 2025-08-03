@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entity/product.entity';
 
@@ -35,5 +35,13 @@ export class ProductService {
     await this.productRepository.save(data);
 
     return true;
+  }
+
+  async getProductsInfo(productIds: string[]) {
+    return await this.productRepository.find({
+      where: {
+        id: In(productIds),
+      },
+    });
   }
 }
