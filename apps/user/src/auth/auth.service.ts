@@ -106,6 +106,7 @@ export class AuthService {
       },
       {
         secret: isRefreshToken ? refreshTokenSecret : accessTokenSecret,
+        algorithm: 'HS256',
         expiresIn: '1h',
       },
     );
@@ -129,6 +130,7 @@ export class AuthService {
         secret: this.configService.getOrThrow<string>(
           isRefreshToken ? 'REFRESH_TOKEN_SECRET' : 'ACCESS_TOKEN_SECRET',
         ),
+        algorithms: ['HS256'],
       });
 
       if (isRefreshToken) {
@@ -143,6 +145,7 @@ export class AuthService {
 
       return payload;
     } catch (e) {
+      console.log(e);
       throw new UnauthorizedException();
     }
   }

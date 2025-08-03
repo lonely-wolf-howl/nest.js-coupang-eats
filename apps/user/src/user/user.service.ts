@@ -18,7 +18,6 @@ export class UserService {
     const user = await this.userRepository.findOne({
       where: { email },
     });
-
     if (user) {
       throw new BadRequestException();
     }
@@ -34,5 +33,14 @@ export class UserService {
     return this.userRepository.findOne({
       where: { email },
     });
+  }
+
+  async getUserById(userId: string) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new BadRequestException();
+    }
+
+    return user;
   }
 }
