@@ -2,15 +2,16 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { PRODUCT_SERVICE, USER_SERVICE } from '@app/common';
+import { PAYMENT_SERVICE, PRODUCT_SERVICE, USER_SERVICE } from '@app/common';
 import { PaymentCancelledExcpetion } from './exception/payment-cancelled.exception';
 import { Product } from './entity/product.entity';
 import { Customer } from './entity/customer.entity';
 import { AddressDto } from './dto/address.dto';
 import { Model } from 'mongoose';
-import { Order } from './entity/order.entity';
+import { Order, OrderStatus } from './entity/order.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaymentDto } from './dto/payment.dto';
+import { PaymentFailedException } from './exception/payment-failed.exception';
 
 @Injectable()
 export class OrderService {
@@ -19,6 +20,8 @@ export class OrderService {
     private readonly userService: ClientProxy,
     @Inject(PRODUCT_SERVICE)
     private readonly productService: ClientProxy,
+    @Inject(PAYMENT_SERVICE)
+    private readonly paymentService: ClientProxy,
     @InjectModel(Order.name)
     private readonly orderModel: Model<Order>,
   ) {}
@@ -42,6 +45,10 @@ export class OrderService {
       address,
       payment,
     );
+
+    await this.processPayment(order._id.toString(), payment, user.email);
+
+    return this.orderModel.findById(order._id);
   }
 
   private async getUserFormToken(token: string) {
@@ -113,5 +120,45 @@ export class OrderService {
       deliveryAddress,
       payment,
     });
+  }
+
+  private async processPayment(
+    orderId: string,
+    payment: PaymentDto,
+    userEmail: string,
+  ) {
+    try {
+      const makePaymentRes = await lastValueFrom(
+        this.paymentService.send(
+          { cmd: 'make_payment' },
+          { orderId, ...payment, userEmail },
+        ),
+      );
+      if (makePaymentRes.status === 'error') {
+        throw new PaymentFailedException(makePaymentRes);
+      }
+
+      const isPaid = makePaymentRes.data.paymentStatus === 'Approved';
+      const orderStatus = isPaid
+        ? OrderStatus.paymentProcessed
+        : OrderStatus.paymentFailed;
+
+      if (orderStatus === OrderStatus.paymentFailed) {
+        throw new PaymentFailedException(makePaymentRes.error);
+      }
+
+      await this.orderModel.findByIdAndUpdate(orderId, {
+        status: OrderStatus.paymentProcessed,
+      });
+
+      return makePaymentRes;
+    } catch (e) {
+      if (e instanceof PaymentFailedException) {
+        await this.orderModel.findByIdAndUpdate(orderId, {
+          status: OrderStatus.paymentFailed,
+        });
+      }
+      throw e;
+    }
   }
 }
