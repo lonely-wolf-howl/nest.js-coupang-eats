@@ -12,7 +12,7 @@ import { RegisterDto } from './dto/register-dto';
 import { Authorization } from './decorator/authorization.decorator';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ParseBearerTokenDto } from './dto/parse-bearer-token.dto';
-import { RpcInterceptor } from '@app/common/interceptor';
+import { RpcInterceptor } from '@app/common';
 
 @Controller('auth')
 export class AuthController {
