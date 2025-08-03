@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { RegisterDto } from './dto/register-dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -105,5 +109,41 @@ export class AuthService {
         expiresIn: '1h',
       },
     );
+  }
+
+  async parseBearerToken(rawToken: string, isRefreshToken: boolean) {
+    const basicSplit = rawToken.split(' ');
+
+    if (basicSplit.length !== 2) {
+      throw new BadRequestException();
+    }
+
+    const [bearer, token] = basicSplit;
+
+    if (bearer.toLowerCase() !== 'bearer') {
+      throw new BadRequestException();
+    }
+
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.getOrThrow<string>(
+          isRefreshToken ? 'REFRESH_TOKEN_SECRET' : 'ACCESS_TOKEN_SECRET',
+        ),
+      });
+
+      if (isRefreshToken) {
+        if (payload.type !== 'refresh') {
+          throw new BadRequestException();
+        }
+      } else {
+        if (payload.type !== 'access') {
+          throw new BadRequestException();
+        }
+      }
+
+      return payload;
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
   }
 }
