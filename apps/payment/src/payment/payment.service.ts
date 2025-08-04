@@ -39,7 +39,7 @@ export class PaymentService {
   }
 
   private async processPayment() {
-    return await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
   private async updatePaymentStatus(id: string, status: PaymentStatus) {
@@ -50,7 +50,7 @@ export class PaymentService {
   }
 
   private async sendNotification(orderId: string, to: string) {
-    return await lastValueFrom(
+    await lastValueFrom(
       this.notificationService.send(
         { cmd: 'send_payment_notification' },
         { orderId, to },

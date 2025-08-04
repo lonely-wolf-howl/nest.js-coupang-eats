@@ -1,37 +1,37 @@
 import {
-  Body,
   Controller,
-  Post,
   UnauthorizedException,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register-dto';
-import { Authorization } from './decorator/authorization.decorator';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ParseBearerTokenDto } from './dto/parse-bearer-token.dto';
 import { RpcInterceptor } from '@app/common';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
-  async registerUser(
-    @Authorization() token: string,
-    @Body() registerDto: RegisterDto,
-  ) {
+  @MessagePattern({ cmd: 'register' })
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(RpcInterceptor)
+  async registerUser(@Payload() payload: RegisterDto) {
+    const { token } = payload;
     if (token === null) {
       throw new UnauthorizedException();
     }
-    return await this.authService.register(token, registerDto);
+    return await this.authService.register(token, payload);
   }
 
-  @Post('login')
+  @MessagePattern({ cmd: 'login' })
   @UsePipes(ValidationPipe)
-  async loginUser(@Authorization() token: string) {
+  @UseInterceptors(RpcInterceptor)
+  async loginUser(@Payload() payload: LoginDto) {
+    const { token } = payload;
     if (token === null) {
       throw new UnauthorizedException();
     }

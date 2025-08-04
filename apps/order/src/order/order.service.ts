@@ -162,7 +162,7 @@ export class OrderService {
     }
   }
 
-  async changeOrderStatus(orderId: string, status: OrderStatus) {
-    await this.orderModel.findByIdAndUpdate(orderId, { status });
+  async changeOrderStatus(id: string, status: OrderStatus) {
+    return this.orderModel.findByIdAndUpdate(id, { status });
   }
 }

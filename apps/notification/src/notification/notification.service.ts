@@ -40,7 +40,7 @@ export class NotificationService {
   }
 
   private async sendEmail() {
-    return await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
   private async updateNotificationStatus(
