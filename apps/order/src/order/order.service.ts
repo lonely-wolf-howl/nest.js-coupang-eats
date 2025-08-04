@@ -26,10 +26,10 @@ export class OrderService {
     private readonly orderModel: Model<Order>,
   ) {}
 
-  async createOrder(token: string, createOrderDto: CreateOrderDto) {
-    const { productIds, address, payment } = createOrderDto;
+  async createOrder(createOrderDto: CreateOrderDto) {
+    const { productIds, address, payment, meta } = createOrderDto;
 
-    const user = await this.getUserFormToken(token);
+    const user = await this.getUserFromToken(meta.user.sub);
 
     const products = await this.getProductsByIds(productIds);
 
@@ -51,16 +51,7 @@ export class OrderService {
     return this.orderModel.findById(order._id);
   }
 
-  private async getUserFormToken(token: string) {
-    const parseBearerTokenRes = await lastValueFrom(
-      this.userService.send({ cmd: 'parse_bearer_token' }, { token }),
-    );
-    if (parseBearerTokenRes.status === 'error') {
-      throw new PaymentCancelledExcpetion(parseBearerTokenRes);
-    }
-
-    const userId: string = parseBearerTokenRes.data.sub;
-
+  private async getUserFromToken(userId: string) {
     const getUserInfoRes = await lastValueFrom(
       this.userService.send({ cmd: 'get_user_info' }, { userId }),
     );
@@ -163,6 +154,7 @@ export class OrderService {
   }
 
   async changeOrderStatus(id: string, status: OrderStatus) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     return this.orderModel.findByIdAndUpdate(id, { status });
   }
 }

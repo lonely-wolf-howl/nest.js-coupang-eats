@@ -10,7 +10,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       isGlobal: true,
       envFilePath: 'apps/product/.env',
       validationSchema: Joi.object({
-        HTTP_PORT: Joi.number().required(),
         DATABASE_URL: Joi.string().required(),
       }),
     }),

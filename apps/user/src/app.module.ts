@@ -11,7 +11,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       isGlobal: true,
       envFilePath: 'apps/user/.env',
       validationSchema: Joi.object({
-        HTTP_PORT: Joi.number().required(),
         DATABASE_URL: Joi.string().required(),
         ACCESS_TOKEN_SECRET: Joi.string().required(),
         REFRESH_TOKEN_SECRET: Joi.string().required(),
