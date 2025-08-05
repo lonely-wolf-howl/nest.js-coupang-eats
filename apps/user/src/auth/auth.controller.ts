@@ -6,23 +6,23 @@ import { UserMicroservice } from '@app/common';
 export class AuthController implements UserMicroservice.AuthServiceController {
   constructor(private readonly authService: AuthService) {}
 
-  async registerUser(data: UserMicroservice.RegisterUserRequest) {
-    const { token } = data;
+  async registerUser(request: UserMicroservice.RegisterUserRequest) {
+    const { token } = request;
     if (token === null) {
       throw new UnauthorizedException();
     }
-    return await this.authService.register(token, data);
+    return await this.authService.register(token, request);
   }
 
-  async loginUser(data: UserMicroservice.LoginUserRequest) {
-    const { token } = data;
+  async loginUser(request: UserMicroservice.LoginUserRequest) {
+    const { token } = request;
     if (token === null) {
       throw new UnauthorizedException();
     }
     return await this.authService.login(token);
   }
 
-  async parseBearerToken(data: UserMicroservice.ParseBearerTokenRequest) {
-    return this.authService.parseBearerToken(data.token, false);
+  async parseBearerToken(request: UserMicroservice.ParseBearerTokenRequest) {
+    return this.authService.parseBearerToken(request.token, false);
   }
 }
