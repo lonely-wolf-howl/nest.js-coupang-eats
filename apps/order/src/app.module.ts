@@ -9,6 +9,7 @@ import {
   PaymentMicroservice,
   PRODUCT_SERVICE,
   ProductMicroservice,
+  traceInterceptor,
   USER_SERVICE,
   UserMicroservice,
 } from '@app/common';
@@ -40,6 +41,9 @@ import { join } from 'path';
           useFactory: (configService: ConfigService) => ({
             transport: Transport.GRPC,
             options: {
+              channelOptions: {
+                interceptors: [traceInterceptor('Order')],
+              },
               package: UserMicroservice.protobufPackage,
               protoPath: join(process.cwd(), 'proto/user.proto'),
               url: configService.getOrThrow<string>('USER_GRPC_URL'),
@@ -52,6 +56,9 @@ import { join } from 'path';
           useFactory: (configService: ConfigService) => ({
             transport: Transport.GRPC,
             options: {
+              channelOptions: {
+                interceptors: [traceInterceptor('Order')],
+              },
               package: ProductMicroservice.protobufPackage,
               protoPath: join(process.cwd(), 'proto/product.proto'),
               url: configService.getOrThrow<string>('PRODUCT_GRPC_URL'),
@@ -64,6 +71,9 @@ import { join } from 'path';
           useFactory: (configService: ConfigService) => ({
             transport: Transport.GRPC,
             options: {
+              channelOptions: {
+                interceptors: [traceInterceptor('Order')],
+              },
               package: PaymentMicroservice.protobufPackage,
               protoPath: join(process.cwd(), 'proto/payment.proto'),
               url: configService.getOrThrow<string>('PAYMENT_GRPC_URL'),

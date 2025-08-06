@@ -2,7 +2,12 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ClientGrpc } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { PAYMENT_SERVICE, PRODUCT_SERVICE, USER_SERVICE } from '@app/common';
+import {
+  constructMetadata,
+  PAYMENT_SERVICE,
+  PRODUCT_SERVICE,
+  USER_SERVICE,
+} from '@app/common';
 import { PaymentCancelledExcpetion } from './exception/payment-cancelled.exception';
 import { Product } from './entity/product.entity';
 import { Customer } from './entity/customer.entity';
@@ -17,6 +22,7 @@ import {
   ProductMicroservice,
   PaymentMicroservice,
 } from '@app/common';
+import { Metadata } from '@grpc/grpc-js';
 
 @Injectable()
 export class OrderService implements OnModuleInit {
@@ -50,12 +56,12 @@ export class OrderService implements OnModuleInit {
       );
   }
 
-  async createOrder(createOrderDto: CreateOrderDto) {
+  async createOrder(createOrderDto: CreateOrderDto, metadata: Metadata) {
     const { productIds, address, payment, meta } = createOrderDto;
 
-    const user = await this.getUserFromToken(meta.user.sub);
+    const user = await this.getUserFromToken(meta.user.sub, metadata);
 
-    const products = await this.getProductsByIds(productIds);
+    const products = await this.getProductsByIds(productIds, metadata);
 
     const totalAmount = await this.calculateTotalAmount(products);
 
@@ -70,18 +76,34 @@ export class OrderService implements OnModuleInit {
       payment,
     );
 
-    await this.processPayment(order._id.toString(), payment, user.email);
+    await this.processPayment(
+      order._id.toString(),
+      payment,
+      user.email,
+      metadata,
+    );
 
     return this.orderModel.findById(order._id);
   }
 
-  private async getUserFromToken(userId: string) {
-    return await lastValueFrom(this.userService.getUserInfo({ userId }));
+  private async getUserFromToken(userId: string, metadata: Metadata) {
+    return await lastValueFrom(
+      this.userService.getUserInfo(
+        { userId },
+        constructMetadata(OrderService.name, 'getUserFromToken', metadata),
+      ),
+    );
   }
 
-  private async getProductsByIds(productIds: string[]): Promise<Product[]> {
+  private async getProductsByIds(
+    productIds: string[],
+    metadata: Metadata,
+  ): Promise<Product[]> {
     const response = await lastValueFrom(
-      this.productService.getProductsInfo({ productIds }),
+      this.productService.getProductsInfo(
+        { productIds },
+        constructMetadata(OrderService.name, 'getProductsByIds', metadata),
+      ),
     );
 
     return response.products.map((product) => ({
@@ -131,10 +153,14 @@ export class OrderService implements OnModuleInit {
     orderId: string,
     payment: PaymentDto,
     userEmail: string,
+    metadata: Metadata,
   ) {
     try {
       const response = await lastValueFrom(
-        this.paymentService.makePayment({ orderId, ...payment, userEmail }),
+        this.paymentService.makePayment(
+          { orderId, ...payment, userEmail },
+          constructMetadata(OrderService.name, 'processPayment', metadata),
+        ),
       );
 
       const isPaid = response.paymentStatus === 'Approved';

@@ -4,7 +4,13 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Notification, NotificationStatus } from './entity/notification.entity';
 import { ClientGrpc } from '@nestjs/microservices';
-import { ORDER_SERVICE, OrderMicroservice } from '@app/common';
+import {
+  constructMetadata,
+  ORDER_SERVICE,
+  OrderMicroservice,
+} from '@app/common';
+import { lastValueFrom } from 'rxjs';
+import { Metadata } from '@grpc/grpc-js';
 
 @Injectable()
 export class NotificationService implements OnModuleInit {
@@ -24,7 +30,10 @@ export class NotificationService implements OnModuleInit {
       );
   }
 
-  async sendPaymentNotification(payload: SendPaymentNotificationDto) {
+  async sendPaymentNotification(
+    payload: SendPaymentNotificationDto,
+    metadata: Metadata,
+  ) {
     const notification = await this.createNotification(payload.to);
 
     await this.sendEmail();
@@ -35,7 +44,7 @@ export class NotificationService implements OnModuleInit {
     );
 
     // fixme (ref. cold observable)
-    this.sendDeliveryStartedMessage(payload.orderId);
+    this.sendDeliveryStartedMessage(payload.orderId, metadata);
 
     return this.notificationModel.findById(notification._id);
   }
@@ -60,7 +69,16 @@ export class NotificationService implements OnModuleInit {
     return this.notificationModel.findByIdAndUpdate(id, { status });
   }
 
-  private sendDeliveryStartedMessage(orderId: string) {
-    return this.orderService.deliveryStarted({ id: orderId });
+  private sendDeliveryStartedMessage(orderId: string, metadata: Metadata) {
+    return lastValueFrom(
+      this.orderService.deliveryStarted(
+        { id: orderId },
+        constructMetadata(
+          NotificationService.name,
+          'sendDeliveryStartedMessage',
+          metadata,
+        ),
+      ),
+    );
   }
 }
