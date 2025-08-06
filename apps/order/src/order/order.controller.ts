@@ -5,6 +5,7 @@ import { OrderMicroservice } from '@app/common';
 import { PaymentMethod } from './entity/payment.entity';
 
 @Controller('order')
+@OrderMicroservice.OrderServiceControllerMethods()
 export class OrderController
   implements OrderMicroservice.OrderServiceController
 {

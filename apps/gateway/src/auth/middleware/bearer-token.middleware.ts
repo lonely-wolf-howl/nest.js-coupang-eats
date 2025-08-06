@@ -1,19 +1,28 @@
-import { USER_SERVICE } from '@app/common';
+import { USER_SERVICE, UserMicroservice } from '@app/common';
 import {
   Inject,
   Injectable,
   NestMiddleware,
-  UnauthorizedException,
+  OnModuleInit,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientGrpc } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable()
-export class BearerTokenMiddleware implements NestMiddleware {
+export class BearerTokenMiddleware implements NestMiddleware, OnModuleInit {
+  authService: UserMicroservice.AuthServiceClient;
+
   constructor(
     @Inject(USER_SERVICE)
-    private readonly userMicroservice: ClientProxy,
+    private readonly userService: ClientGrpc,
   ) {}
+
+  onModuleInit() {
+    this.authService =
+      this.userService.getService<UserMicroservice.AuthServiceClient>(
+        'AuthService',
+      );
+  }
 
   async use(req: any, res: any, next: (error?: Error | any) => void) {
     const token = this.getRawToken(req);
@@ -32,12 +41,6 @@ export class BearerTokenMiddleware implements NestMiddleware {
   }
 
   async verifyToken(token: string) {
-    const result = await lastValueFrom(
-      this.userMicroservice.send({ cmd: 'parse_bearer_token' }, { token }),
-    );
-    if (result.status === 'error') {
-      throw new UnauthorizedException(result);
-    }
-    return result.data;
+    return await lastValueFrom(this.authService.parseBearerToken({ token }));
   }
 }

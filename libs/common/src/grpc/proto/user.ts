@@ -5,11 +5,11 @@
 // source: user.proto
 
 /* eslint-disable */
-import type { Metadata } from "@grpc/grpc-js";
-import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
-import { Observable } from "rxjs";
+import type { Metadata } from '@grpc/grpc-js';
+import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
 
-export const protobufPackage = "user";
+export const protobufPackage = 'user';
 
 export interface RegisterUserRequest {
   token: string;
@@ -55,74 +55,130 @@ export interface GetUserInfoResponse {
   profile: string;
 }
 
-export const USER_PACKAGE_NAME = "user";
+export const USER_PACKAGE_NAME = 'user';
 
 export interface AuthServiceClient {
-  registerUser(request: RegisterUserRequest, metadata?: Metadata): Observable<RegisterUserResponse>;
+  registerUser(
+    request: RegisterUserRequest,
+    metadata?: Metadata,
+  ): Observable<RegisterUserResponse>;
 
-  loginUser(request: LoginUserRequest, metadata?: Metadata): Observable<LoginUserResponse>;
+  loginUser(
+    request: LoginUserRequest,
+    metadata?: Metadata,
+  ): Observable<LoginUserResponse>;
 
-  parseBearerToken(request: ParseBearerTokenRequest, metadata?: Metadata): Observable<ParseBearerTokenResponse>;
+  parseBearerToken(
+    request: ParseBearerTokenRequest,
+    metadata?: Metadata,
+  ): Observable<ParseBearerTokenResponse>;
 }
 
 export interface AuthServiceController {
   registerUser(
     request: RegisterUserRequest,
     metadata?: Metadata,
-  ): Promise<RegisterUserResponse> | Observable<RegisterUserResponse> | RegisterUserResponse;
+  ):
+    | Promise<RegisterUserResponse>
+    | Observable<RegisterUserResponse>
+    | RegisterUserResponse;
 
   loginUser(
     request: LoginUserRequest,
     metadata?: Metadata,
-  ): Promise<LoginUserResponse> | Observable<LoginUserResponse> | LoginUserResponse;
+  ):
+    | Promise<LoginUserResponse>
+    | Observable<LoginUserResponse>
+    | LoginUserResponse;
 
   parseBearerToken(
     request: ParseBearerTokenRequest,
     metadata?: Metadata,
-  ): Promise<ParseBearerTokenResponse> | Observable<ParseBearerTokenResponse> | ParseBearerTokenResponse;
+  ):
+    | Promise<ParseBearerTokenResponse>
+    | Observable<ParseBearerTokenResponse>
+    | ParseBearerTokenResponse;
 }
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["registerUser", "loginUser", "parseBearerToken"];
+    const grpcMethods: string[] = [
+      'registerUser',
+      'loginUser',
+      'parseBearerToken',
+    ];
     for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(
+        constructor.prototype,
+        method,
+      );
+      GrpcMethod('AuthService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
     const grpcStreamMethods: string[] = [];
     for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcStreamMethod("AuthService", method)(constructor.prototype[method], method, descriptor);
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(
+        constructor.prototype,
+        method,
+      );
+      GrpcStreamMethod('AuthService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
   };
 }
 
-export const AUTH_SERVICE_NAME = "AuthService";
+export const AUTH_SERVICE_NAME = 'AuthService';
 
 export interface UserServiceClient {
-  getUserInfo(request: GetUserInfoRequest, metadata?: Metadata): Observable<GetUserInfoResponse>;
+  getUserInfo(
+    request: GetUserInfoRequest,
+    metadata?: Metadata,
+  ): Observable<GetUserInfoResponse>;
 }
 
 export interface UserServiceController {
   getUserInfo(
     request: GetUserInfoRequest,
     metadata?: Metadata,
-  ): Promise<GetUserInfoResponse> | Observable<GetUserInfoResponse> | GetUserInfoResponse;
+  ):
+    | Promise<GetUserInfoResponse>
+    | Observable<GetUserInfoResponse>
+    | GetUserInfoResponse;
 }
 
 export function UserServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["getUserInfo"];
+    const grpcMethods: string[] = ['getUserInfo'];
     for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcMethod("UserService", method)(constructor.prototype[method], method, descriptor);
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(
+        constructor.prototype,
+        method,
+      );
+      GrpcMethod('UserService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
     const grpcStreamMethods: string[] = [];
     for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcStreamMethod("UserService", method)(constructor.prototype[method], method, descriptor);
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(
+        constructor.prototype,
+        method,
+      );
+      GrpcStreamMethod('UserService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
   };
 }
 
-export const USER_SERVICE_NAME = "UserService";
+export const USER_SERVICE_NAME = 'UserService';

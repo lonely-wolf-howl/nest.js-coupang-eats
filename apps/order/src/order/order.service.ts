@@ -1,6 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientGrpc } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { PAYMENT_SERVICE, PRODUCT_SERVICE, USER_SERVICE } from '@app/common';
 import { PaymentCancelledExcpetion } from './exception/payment-cancelled.exception';
@@ -12,19 +12,43 @@ import { Order, OrderStatus } from './entity/order.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaymentDto } from './dto/payment.dto';
 import { PaymentFailedException } from './exception/payment-failed.exception';
+import {
+  UserMicroservice,
+  ProductMicroservice,
+  PaymentMicroservice,
+} from '@app/common';
 
 @Injectable()
-export class OrderService {
+export class OrderService implements OnModuleInit {
+  userService: UserMicroservice.UserServiceClient;
+  productService: ProductMicroservice.ProductServiceClient;
+  paymentService: PaymentMicroservice.PaymentServiceClient;
+
   constructor(
     @Inject(USER_SERVICE)
-    private readonly userService: ClientProxy,
+    private readonly userMicroservice: ClientGrpc,
     @Inject(PRODUCT_SERVICE)
-    private readonly productService: ClientProxy,
+    private readonly productMicroservice: ClientGrpc,
     @Inject(PAYMENT_SERVICE)
-    private readonly paymentService: ClientProxy,
+    private readonly paymentMicroservice: ClientGrpc,
     @InjectModel(Order.name)
     private readonly orderModel: Model<Order>,
   ) {}
+
+  onModuleInit() {
+    this.userService =
+      this.userMicroservice.getService<UserMicroservice.UserServiceClient>(
+        'UserService',
+      );
+    this.productService =
+      this.productMicroservice.getService<ProductMicroservice.ProductServiceClient>(
+        'ProductService',
+      );
+    this.paymentService =
+      this.paymentMicroservice.getService<PaymentMicroservice.PaymentServiceClient>(
+        'PaymentService',
+      );
+  }
 
   async createOrder(createOrderDto: CreateOrderDto) {
     const { productIds, address, payment, meta } = createOrderDto;
@@ -52,25 +76,15 @@ export class OrderService {
   }
 
   private async getUserFromToken(userId: string) {
-    const getUserInfoRes = await lastValueFrom(
-      this.userService.send({ cmd: 'get_user_info' }, { userId }),
-    );
-    if (getUserInfoRes.status === 'error') {
-      throw new PaymentCancelledExcpetion(getUserInfoRes);
-    }
-
-    return getUserInfoRes.data;
+    return await lastValueFrom(this.userService.getUserInfo({ userId }));
   }
 
   private async getProductsByIds(productIds: string[]): Promise<Product[]> {
-    const getProductsInfoRes = await lastValueFrom(
-      this.productService.send({ cmd: 'get_products_info' }, { productIds }),
+    const response = await lastValueFrom(
+      this.productService.getProductsInfo({ productIds }),
     );
-    if (getProductsInfoRes.status === 'error') {
-      throw new PaymentCancelledExcpetion(getProductsInfoRes);
-    }
 
-    return getProductsInfoRes.data.map((product) => ({
+    return response.products.map((product) => ({
       productId: product.id,
       name: product.name,
       price: product.price,
@@ -119,30 +133,24 @@ export class OrderService {
     userEmail: string,
   ) {
     try {
-      const makePaymentRes = await lastValueFrom(
-        this.paymentService.send(
-          { cmd: 'make_payment' },
-          { orderId, ...payment, userEmail },
-        ),
+      const response = await lastValueFrom(
+        this.paymentService.makePayment({ orderId, ...payment, userEmail }),
       );
-      if (makePaymentRes.status === 'error') {
-        throw new PaymentFailedException(makePaymentRes);
-      }
 
-      const isPaid = makePaymentRes.data.paymentStatus === 'Approved';
+      const isPaid = response.paymentStatus === 'Approved';
       const orderStatus = isPaid
         ? OrderStatus.paymentProcessed
         : OrderStatus.paymentFailed;
 
       if (orderStatus === OrderStatus.paymentFailed) {
-        throw new PaymentFailedException(makePaymentRes.error);
+        throw new PaymentFailedException(response);
       }
 
       await this.orderModel.findByIdAndUpdate(orderId, {
         status: OrderStatus.paymentProcessed,
       });
 
-      return makePaymentRes;
+      return response;
     } catch (e) {
       if (e instanceof PaymentFailedException) {
         await this.orderModel.findByIdAndUpdate(orderId, {
@@ -154,7 +162,6 @@ export class OrderService {
   }
 
   async changeOrderStatus(id: string, status: OrderStatus) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     return this.orderModel.findByIdAndUpdate(id, { status });
   }
 }

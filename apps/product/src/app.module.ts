@@ -11,6 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       envFilePath: 'apps/product/.env',
       validationSchema: Joi.object({
         DATABASE_URL: Joi.string().required(),
+        GRPC_URL: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRootAsync({

@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { UserMicroservice } from '@app/common';
 
 @Controller('auth')
+@UserMicroservice.AuthServiceControllerMethods()
 export class AuthController implements UserMicroservice.AuthServiceController {
   constructor(private readonly authService: AuthService) {}
 

@@ -17,6 +17,9 @@ async function bootstrap() {
       url: configService.getOrThrow<string>('GRPC_URL'),
     },
   });
+
+  await app.init();
+
   await app.startAllMicroservices();
 }
 

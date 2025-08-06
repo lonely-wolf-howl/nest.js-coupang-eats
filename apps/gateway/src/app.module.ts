@@ -23,7 +23,6 @@ import { join } from 'path';
       envFilePath: 'apps/gateway/.env',
       validationSchema: Joi.object({
         HTTP_PORT: Joi.number().required(),
-        GRPC_URL: Joi.string().required(),
         USER_GRPC_URL: Joi.string().required(),
         PRODUCT_GRPC_URL: Joi.string().required(),
         ORDER_GRPC_URL: Joi.string().required(),

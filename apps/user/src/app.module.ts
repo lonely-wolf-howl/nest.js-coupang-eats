@@ -14,6 +14,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         DATABASE_URL: Joi.string().required(),
         ACCESS_TOKEN_SECRET: Joi.string().required(),
         REFRESH_TOKEN_SECRET: Joi.string().required(),
+        GRPC_URL: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRootAsync({

@@ -3,6 +3,7 @@ import { NotificationService } from './notification.service';
 import { NotificationMicroservice } from '@app/common';
 
 @Controller()
+@NotificationMicroservice.NotificationServiceControllerMethods()
 export class NotificationController
   implements NotificationMicroservice.NotificationServiceController
 {

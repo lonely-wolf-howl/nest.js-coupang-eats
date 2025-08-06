@@ -5,14 +5,13 @@
 // source: product.proto
 
 /* eslint-disable */
-import type { Metadata } from "@grpc/grpc-js";
-import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
-import { Observable } from "rxjs";
+import type { Metadata } from '@grpc/grpc-js';
+import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
 
-export const protobufPackage = "product";
+export const protobufPackage = 'product';
 
-export interface CreateSamplesRequest {
-}
+export interface CreateSamplesRequest {}
 
 export interface CreateSamplesResponse {
   success: boolean;
@@ -34,39 +33,65 @@ export interface GetProductsInfoResponse_ProductInfo {
   stock: number;
 }
 
-export const PRODUCT_PACKAGE_NAME = "product";
+export const PRODUCT_PACKAGE_NAME = 'product';
 
 export interface ProductServiceClient {
-  createSamples(request: CreateSamplesRequest, metadata?: Metadata): Observable<CreateSamplesResponse>;
+  createSamples(
+    request: CreateSamplesRequest,
+    metadata?: Metadata,
+  ): Observable<CreateSamplesResponse>;
 
-  getProductsInfo(request: GetProductsInfoRequest, metadata?: Metadata): Observable<GetProductsInfoResponse>;
+  getProductsInfo(
+    request: GetProductsInfoRequest,
+    metadata?: Metadata,
+  ): Observable<GetProductsInfoResponse>;
 }
 
 export interface ProductServiceController {
   createSamples(
     request: CreateSamplesRequest,
     metadata?: Metadata,
-  ): Promise<CreateSamplesResponse> | Observable<CreateSamplesResponse> | CreateSamplesResponse;
+  ):
+    | Promise<CreateSamplesResponse>
+    | Observable<CreateSamplesResponse>
+    | CreateSamplesResponse;
 
   getProductsInfo(
     request: GetProductsInfoRequest,
     metadata?: Metadata,
-  ): Promise<GetProductsInfoResponse> | Observable<GetProductsInfoResponse> | GetProductsInfoResponse;
+  ):
+    | Promise<GetProductsInfoResponse>
+    | Observable<GetProductsInfoResponse>
+    | GetProductsInfoResponse;
 }
 
 export function ProductServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["createSamples", "getProductsInfo"];
+    const grpcMethods: string[] = ['createSamples', 'getProductsInfo'];
     for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcMethod("ProductService", method)(constructor.prototype[method], method, descriptor);
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(
+        constructor.prototype,
+        method,
+      );
+      GrpcMethod('ProductService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
     const grpcStreamMethods: string[] = [];
     for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcStreamMethod("ProductService", method)(constructor.prototype[method], method, descriptor);
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(
+        constructor.prototype,
+        method,
+      );
+      GrpcStreamMethod('ProductService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
   };
 }
 
-export const PRODUCT_SERVICE_NAME = "ProductService";
+export const PRODUCT_SERVICE_NAME = 'ProductService';
