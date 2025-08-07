@@ -10,6 +10,7 @@ import {
   traceInterceptor,
 } from '@app/common';
 import { join } from 'path';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { join } from 'path';
       envFilePath: 'apps/payment/.env',
       validationSchema: Joi.object({
         DATABASE_URL: Joi.string().required(),
+        MONGODB_DATABASE_URL: Joi.string().required(),
         GRPC_URL: Joi.string().required(),
         NOTIFICATION_GRPC_URL: Joi.string().required(),
       }),
@@ -28,6 +30,12 @@ import { join } from 'path';
         url: configService.getOrThrow('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: true,
+      }),
+      inject: [ConfigService],
+    }),
+    MongooseModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.getOrThrow('MONGODB_DATABASE_URL'),
       }),
       inject: [ConfigService],
     }),

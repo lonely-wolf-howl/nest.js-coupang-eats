@@ -3,7 +3,7 @@ import { DatabaseOutputPort } from '../../../port/output/database.output-port';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaymentEntity } from './entity/payment.entity';
 import { Repository } from 'typeorm';
-import { PaymentEntityMapper } from './mapper/payment.mapper';
+import { PaymentEntityMapper } from './mapper/payment-entity.mapper';
 
 export class TypeOrmAdapter implements DatabaseOutputPort {
   constructor(
