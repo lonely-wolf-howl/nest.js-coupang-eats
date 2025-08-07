@@ -1,33 +1,24 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-
-export enum PaymentStatus {
-  pending = 'Pending',
-  rejected = 'Rejected',
-  approved = 'Approved',
-}
-
-export enum PaymentMethod {
-  creditCard = 'CreditCard',
-  kakaoPay = 'KakaoPay',
-}
-
-export enum NotificationStatus {
-  pending = 'Pending',
-  sent = 'Sent',
-}
+import {
+  NotificationStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from '../../../../domain/payment.vo';
 
 @Entity()
-export class Payment {
+export class PaymentEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({
+    type: 'enum',
     enum: PaymentStatus,
     default: PaymentStatus.pending,
   })
   paymentStatus: PaymentStatus;
 
   @Column({
+    type: 'enum',
     enum: PaymentMethod,
     default: PaymentMethod.creditCard,
   })
@@ -49,8 +40,18 @@ export class Payment {
   passwordTwoDigits: string;
 
   @Column({
+    type: 'enum',
     enum: NotificationStatus,
     default: NotificationStatus.pending,
   })
   notificationStatus: NotificationStatus;
+
+  @Column()
+  orderId: string;
+
+  @Column()
+  amount: number;
+
+  @Column()
+  userEmail: string;
 }
