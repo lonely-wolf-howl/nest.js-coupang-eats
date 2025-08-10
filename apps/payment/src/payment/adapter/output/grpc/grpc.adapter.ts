@@ -19,7 +19,7 @@ export class GrpcAdapter implements NetworkOutputPort, OnModuleInit {
       );
   }
 
-  async sendNotification(orderId: string, to: string): Promise<void> {
+  async sendNotification(orderId: string, to: string) {
     await lastValueFrom(
       this.notificationService.sendPaymentNotification({
         to,

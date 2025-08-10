@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Customer, CustomerSchema } from './customer.entity';
+import { CustomerDocument, CustomerSchema } from './customer.entity';
 import {
-  DeliveryAddress,
+  DeliveryAddressDocument,
   DeliveryAddressSchema,
 } from './delivery-address.entity';
-import { Payment, PaymentSchema } from './payment.entity';
-import { Product, ProductSchema } from './product.entity';
+import { PaymentDocument, PaymentSchema } from './payment.entity';
+import { ProductDocument, ProductSchema } from './product.entity';
 import { Document, ObjectId } from 'mongoose';
 
 export enum OrderStatus {
@@ -18,26 +18,28 @@ export enum OrderStatus {
 }
 
 @Schema()
-export class Order extends Document<ObjectId> {
+export class OrderDocument extends Document<ObjectId> {
   @Prop({
     type: CustomerSchema,
     required: true,
   })
-  customer: Customer;
+  customer: CustomerDocument;
 
   @Prop({
     type: [ProductSchema],
     required: true,
   })
-  products: Product[];
+  products: ProductDocument[];
 
   @Prop({
     type: DeliveryAddressSchema,
     required: true,
   })
-  deliveryAddress: DeliveryAddress;
+  deliveryAddress: DeliveryAddressDocument;
 
   @Prop({
+    type: String,
+    required: true,
     enum: OrderStatus,
     default: OrderStatus.pending,
   })
@@ -45,9 +47,8 @@ export class Order extends Document<ObjectId> {
 
   @Prop({
     type: PaymentSchema,
-    required: true,
   })
-  payment: Payment;
+  payment: PaymentDocument;
 }
 
-export const OrderSchema = SchemaFactory.createForClass(Order);
+export const OrderSchema = SchemaFactory.createForClass(OrderDocument);

@@ -9,8 +9,8 @@ import {
   ORDER_SERVICE,
   OrderMicroservice,
 } from '@app/common';
-import { lastValueFrom } from 'rxjs';
 import { Metadata } from '@grpc/grpc-js';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class NotificationService implements OnModuleInit {
@@ -43,8 +43,9 @@ export class NotificationService implements OnModuleInit {
       NotificationStatus.sent,
     );
 
-    // fixme (ref. cold observable)
-    this.sendDeliveryStartedMessage(payload.orderId, metadata);
+    this.fireAndForget(
+      this.sendDeliveryStartedMessage(payload.orderId, metadata),
+    );
 
     return this.notificationModel.findById(notification._id);
   }
@@ -69,8 +70,14 @@ export class NotificationService implements OnModuleInit {
     return this.notificationModel.findByIdAndUpdate(id, { status });
   }
 
-  private sendDeliveryStartedMessage(orderId: string, metadata: Metadata) {
-    return lastValueFrom(
+  private fireAndForget<T>(promise: Promise<T>, ctx: Record<string, any> = {}) {
+    void promise.catch((err) => {
+      console.error({ err, ...ctx });
+    });
+  }
+
+  async sendDeliveryStartedMessage(orderId: string, metadata: Metadata) {
+    await lastValueFrom(
       this.orderService.deliveryStarted(
         { id: orderId },
         constructMetadata(
