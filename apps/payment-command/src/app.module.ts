@@ -16,7 +16,7 @@ import { MongooseModule } from '@nestjs/mongoose';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: 'apps/payment/.env',
+      envFilePath: 'apps/payment-command/.env',
       validationSchema: Joi.object({
         DATABASE_URL: Joi.string().required(),
         MONGODB_DATABASE_URL: Joi.string().required(),
@@ -55,6 +55,18 @@ import { MongooseModule } from '@nestjs/mongoose';
             },
           }),
           inject: [ConfigService],
+        },
+        {
+          name: 'KAFKA_SERVICE',
+          useFactory: () => ({
+            transport: Transport.KAFKA,
+            options: {
+              client: {
+                clientId: 'payment-command',
+                brokers: ['kafka:9092'],
+              },
+            },
+          }),
         },
       ],
       isGlobal: true,

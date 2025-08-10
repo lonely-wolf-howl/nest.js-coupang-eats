@@ -21,4 +21,15 @@ export class PaymentDocumentMapper {
 
     return model;
   }
+
+  toPaymentQueryMicroservicePayload() {
+    return {
+      _id: this.document._id,
+      userEmail: this.document.userEmail,
+      amount: this.document.amount,
+      paymentStatus: this.document.paymentStatus,
+      cardNumberLastFourDigits: this.document.cardNumber.slice(-4),
+      orderId: this.document.orderId,
+    };
+  }
 }

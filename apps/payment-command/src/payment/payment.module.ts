@@ -3,7 +3,6 @@ import { PaymentController } from './adapter/input/payment.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PaymentService } from './application/payment.service';
 import { PaymentEntity } from './adapter/output/type-orm/entity/payment.entity';
-// import { TypeOrmAdapter } from './adapter/output/type-orm/type-orm.adapter';
 import { PortOneAdapter } from './adapter/output/port-one/port-one.adapter';
 import { GrpcAdapter } from './adapter/output/grpc/grpc.adapter';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -26,10 +25,6 @@ import { MongooseAdapter } from './adapter/output/mongoose/mongoose.adapter';
   controllers: [PaymentController],
   providers: [
     PaymentService,
-    // {
-    //   provide: 'DatabaseOutputPort',
-    //   useClass: TypeOrmAdapter,
-    // },
     {
       provide: 'DatabaseOutputPort',
       useClass: MongooseAdapter,
