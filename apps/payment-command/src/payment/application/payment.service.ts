@@ -49,4 +49,14 @@ export class PaymentService {
 
     return payment;
   }
+
+  async cancelPayment(orderId: string) {
+    await this.paymentOutputPort.cancelPayment(orderId);
+
+    const payment = await this.databaseOutputPort.findPaymentByOrderId(orderId);
+
+    payment.rejectPayment();
+
+    await this.databaseOutputPort.updatePayment(payment);
+  }
 }

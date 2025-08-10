@@ -4,12 +4,10 @@ import { Model } from 'mongoose';
 import { PaymentDocument } from './document/payment.document';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaymentDocumentMapper } from './mapper/payment-document.mapper';
-import { Inject, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 
-export class MongooseAdapter
-  implements DatabaseOutputPort, OnModuleInit, OnModuleDestroy
-{
+export class MongooseAdapter implements DatabaseOutputPort {
   constructor(
     @InjectModel(PaymentDocument.name)
     private readonly paymentModel: Model<PaymentDocument>,
@@ -17,27 +15,13 @@ export class MongooseAdapter
     private readonly kafkaService: ClientKafka,
   ) {}
 
-  async onModuleInit() {
-    await this.kafkaService.connect();
-  }
-
-  async onModuleDestroy() {
-    await this.kafkaService.close();
-  }
-
   async savePayment(payment: PaymentModel): Promise<PaymentModel> {
     const model = await this.paymentModel.create(payment);
 
     const mapper = new PaymentDocumentMapper(model);
-
     const payload = mapper.toPaymentQueryMicroservicePayload();
-    console.log('[producer] emit payment.created =>', payload);
 
-    this.kafkaService.emit('payment.created', payload).subscribe({
-      next: () => console.log('[producer] emitted payment.created'),
-      error: (err) =>
-        console.error('[producer] emit error payment.created', err),
-    });
+    this.kafkaService.emit('payment.created', payload);
 
     return mapper.toDomain();
   }
@@ -46,15 +30,19 @@ export class MongooseAdapter
     const model = await this.paymentModel.create(payment);
 
     const mapper = new PaymentDocumentMapper(model);
-
     const payload = mapper.toPaymentQueryMicroservicePayload();
-    console.log('[producer] emit payment.updated =>', payload);
 
-    this.kafkaService.emit('payment.updated', payload).subscribe({
-      next: () => console.log('[producer] emitted payment.updated'),
-      error: (err) =>
-        console.error('[producer] emit error payment.updated', err),
+    this.kafkaService.emit('payment.updated', payload);
+
+    return mapper.toDomain();
+  }
+
+  async findPaymentByOrderId(orderId: string): Promise<PaymentModel> {
+    const model = await this.paymentModel.findOne({
+      orderId,
     });
+
+    const mapper = new PaymentDocumentMapper(model);
 
     return mapper.toDomain();
   }

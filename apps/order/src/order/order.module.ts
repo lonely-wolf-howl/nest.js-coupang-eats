@@ -11,17 +11,22 @@ import { OrderRepository } from './infrastructure/mongoose/repository/order.repo
 import { ProductGrpc } from './infrastructure/grpc/product.grpc';
 import { UserGrpc } from './infrastructure/grpc/user.grpc';
 import { PaymentGrpc } from './infrastructure/grpc/payment.grpc';
+import { CancelOrderUseCase } from './use-case/cancel-order.use-case';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: OrderDocument.name, schema: OrderSchema },
+      {
+        name: OrderDocument.name,
+        schema: OrderSchema,
+      },
     ]),
   ],
   controllers: [OrderController],
   providers: [
     CreateOrderUseCase,
     StartDeliveryUseCase,
+    CancelOrderUseCase,
     {
       provide: 'UserOutputPort',
       useClass: UserGrpc,
