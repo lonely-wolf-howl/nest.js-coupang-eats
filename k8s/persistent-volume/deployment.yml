@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
-  labels:
-    app: nginx-app
 
 spec:
   replicas: 3
@@ -14,14 +12,16 @@ spec:
     spec:
       containers:
         - name: nginx-container
-          image: nginx:1.19
+          image: nginx
           ports:
             - containerPort: 80
+          volumeMounts:
+            - name: nginx-storage
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: nginx-storage
+          persistentVolumeClaim:
+            claimName: nginx-persistent-volume-claim
   selector:
     matchLabels:
       app: nginx-app
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1

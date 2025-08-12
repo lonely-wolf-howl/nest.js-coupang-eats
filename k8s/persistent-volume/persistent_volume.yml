@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nginx-persistent-volume
+
+# ReadWriteOnce (RWO) -> Can only be mounted in Read/Write mode by a single node
+# ReadOnlyMany (ROX) -> Can be mounted in Read-Only mode by multiple nodes
+# ReadWriteMany (RWX) -> Can be mounted in Read/Write mode by multiple nodes (NFS)
+
+spec:
+  capacity:
+    storage: 1Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    type: DirectoryOrCreate
+    path: "/mnt/data"

@@ -4,7 +4,6 @@ metadata:
   name: nginx-deployment
   labels:
     app: nginx-app
-    type: back-end
 
 spec:
   replicas: 3
@@ -12,7 +11,6 @@ spec:
     metadata:
       labels:
         app: nginx-app
-        type: back-end
     spec:
       containers:
         - name: nginx-container
@@ -22,4 +20,3 @@ spec:
   selector:
     matchLabels:
       app: nginx-app
-      type: back-end
